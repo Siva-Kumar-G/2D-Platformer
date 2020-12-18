@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
+    public Transform eggDetectionPoint;
+    public float eggDetectionRadious;
+    public LayerMask eggLayer;
     public Text scoreText;
 
     public Rigidbody2D rb;
@@ -62,25 +65,19 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // if (groundedObjects != null)
-        // {
-        //     Debug.Log(groundedObjects.tag);
-        //     //todo Need to add the ground check layer...
-        //     // if (groundedObjects.tag.Equals("Platform"))
-        //     // {
-        //     _isGrounded = true;
-        //  
-        //     // }
-        //
-        //     // foreach (var VARIABLE in groundedObjects)
-        //     // {
-        //     //     if (VARIABLE.tag.Equals("Platform"))
-        //     //     {
-        //     //         _isGrounded = true;
-        //     //         _animator.SetBool(Jump, false);
-        //     //     }
-        //     // }
-        // }
+        if (_isGameOver)
+            return;
+        var collidedEgg = Physics2D.OverlapCircle(eggDetectionPoint.position, eggDetectionRadious, eggLayer);
+        if(collidedEgg !=null)
+        {
+            Debug.Log(collidedEgg.gameObject.name);
+            Destroy(collidedEgg.gameObject);
+            _score = _score + 1;
+            scoreText.text = _score.ToString();
+
+            _audioSource.PlayOneShot(coinCollectAudio);
+        }
+
 #if UNITY_EDITOR
         _direction = Input.GetAxisRaw("Horizontal");
 
@@ -180,22 +177,28 @@ public class PlayerController : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.DrawSphere(groundCheckPoint.position, groundCheckRadius);
+        Gizmos.DrawSphere(eggDetectionPoint.position, eggDetectionRadious);
+
+        Gizmos.color = Color.red;
+
     }
 
+   
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log(other.gameObject.tag);
-        if (other.gameObject.tag.Equals("Egg"))
-        {
-            Debug.Log("Egg Captured");
-            Destroy(other.gameObject);
-            _score = _score + 1;
-            scoreText.text = _score.ToString();
+        
+        //if (other.gameObject.tag.Equals("Egg"))
+        //{
+        //    Debug.Log("Egg Captured");
+        //    Destroy(other.gameObject);
+        //    _score = _score + 1;
+        //    scoreText.text = _score.ToString();
 
-            _audioSource.PlayOneShot(coinCollectAudio);
-        }
-        else if (other.gameObject.tag.Equals("Die"))
+        //    _audioSource.PlayOneShot(coinCollectAudio);
+        //}
+        //else
+        if (other.gameObject.tag.Equals("Die"))
         {
             //todo need to show Died panel 
             _audioSource.PlayOneShot(dieAudio);
